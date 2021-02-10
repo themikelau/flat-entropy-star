@@ -43,9 +43,9 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  surfpres = 300. !2.374667d5
  !
  ! Adjustment factor for shooting
- rhofac0 = 0.01 ! Multiplicative factor for adjusting central density
+ rhofac0 = 0.01   ! Multiplicative factor for adjusting central density
  Sfac = 0.008     ! Additive factor for adjusting entropy
- tol = 1d-3     ! Relative tolerance for matching surface pressure and radius to desired values
+ tol = 1d-3       ! Relative tolerance for matching surface pressure and radius to desired values
  !
  ! Expression for entropy
  ieos = 12
@@ -112,7 +112,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
     ! Vary central density to get the desired surface pressure
        do
           surfpres_old = pres(N) ! Save value of surface pressure in previous shot
-          call one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy,.false.)
+          call one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
           if ( abs(pres(N)-surfpres) < tol * pres(N) ) exit
           write(*,'(i4,2x,i4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)'),counter1,counter2,rhofac,Sc,rho(0),pres(N),r(N)/solarr ! DEBUGGING
           if (pres(N) > surfpres) then
@@ -156,7 +156,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
 end subroutine calc_rho_and_pres
 
 
-subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy,idebug)
+subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
  use physcon, only:gg,pi,solarm,solarr
  use eos, only:get_rho_from_p_s
  use rho_profile, only:write_softened_profile
@@ -165,28 +165,14 @@ subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy,idebug)
  real, allocatable, dimension(:), intent(inout) :: r,rho,pres
  integer, intent(in)                            :: ientropy
  integer                                        :: i,N
- logical, intent(in)                            :: idebug
  character(len=120) :: outputpath
 
  N = size(m)-1
  do i = 1,N-1
-    if (idebug) then
-      write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)') i,m(i)/solarm,r(i),rho(i),pres(i)
-    endif
-
     pres(i+1) = pres(i) - dm_c(i) * gg/(4*pi*r(i)**2) * ( m(i)/r(i)**2 + mcore * gcore(r(i),rcore) )
     if (pres(i+1) < 0.) then
-       print*,'ERROR: Reached pres < 0 at i = ',i, 'm = ',m(i)/solarm
-       write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)') i,pres(i),pres(i+1),r(i-1),r(i),m(i)/solarm
-       !outputpath = 'oneshot.dat'
-       !call write_softened_profile(outputpath,m(0:i),pres(0:i),m(0:i),r(0:i),rho(0:i),m(0:i))
        pres(N) = -1. ! Force shooter to increase central density again and refine adjustment to central pressure
        return
-    endif
-    if (pres(i+1) > pres(i)) then
-       print*,'ERROR: Pressure inversion at i = ',i, 'm = ',m(i)/solarm
-       write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)') i,pres(i),pres(i+1),r(i-1),r(i),m(i-1)/solarm,m(i)/solarm
-       stop
     endif
     call get_rho_from_p_s(pres(i+1),Sc,rho(i+1),rho(i),ientropy)
     if (rho(i+1) < 0.) then
@@ -200,16 +186,6 @@ subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy,idebug)
        stop
     endif
     r(i+1) = (3*dm(i+1)/(4*pi*rho(i+1)) + r(i)**3)**(1./3.)
-    if (r(i+1) < 0.) then
-       print*,'ERROR: Reached r < 0 at i = ',i, 'm = ',m(i)/solarm
-       write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4)') i,rho(i+1),r(i),r(i+1)
-       stop
-    endif
-    if (r(i+1) < r(i)) then
-       print*,'ERROR: Radius inversion at i = ',i, 'm = ',m(i)/solarm
-       write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4)') i,rho(i+1),r(i),r(i+1)
-       stop
-    endif
  enddo
 
 end subroutine one_shot
