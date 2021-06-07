@@ -33,6 +33,8 @@ mike:
 	cd ${PHANTOMDIR}; make mike SETUP=${SETUP} RUNDIR=${PWD}; cd -; cp ${PHANTOMDIR}/bin/fixedSprofile .
 mike2:
 	cd ${PHANTOMDIR}; make mike2 SETUP=${SETUP} RUNDIR=${PWD}; cd -; cp ${PHANTOMDIR}/bin/write_uTprofile .
+mike3:
+	cd ${PHANTOMDIR}; make mike3 SETUP=${SETUP} RUNDIR=${PWD}; cd -; cp ${PHANTOMDIR}/bin/calc_binding_energy .
 moddump:
 	cd ${PHANTOMDIR}; make SETUP=${SETUP} RUNDIR=${PWD} KROME= moddump; cd -; cp ${PHANTOMDIR}/bin/phantommoddump .
 analysis:
