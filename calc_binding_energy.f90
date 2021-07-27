@@ -2,10 +2,10 @@ program calc_binding_energy
  use rho_profile, only:read_mesa
  use eos,         only:calc_temp_and_ene,ieos,gmw,X_in,Z_in,init_eos,gamma
  use kernel,      only:kernel_softening
- use physcon,     only:solarm,solarr,gg
+ use physcon,     only:solarm,solarr,gg,radconst,kb_on_mh
  implicit none
  real, allocatable, dimension(:) :: m,r,rho,pres,ene,temp,Xfrac,Yfrac
- real :: Mstar,hsoft,rcore,mcore,dum,q,Ebind_b,Ebind_g,potencore,phi
+ real :: Mstar,hsoft,rcore,mcore,dum,q,bind_int,bind_grav,bind_th,potencore,phi,ethi,mui
  integer :: ierr,i
  character(len=120) :: inputpath
 
@@ -28,8 +28,9 @@ program calc_binding_energy
  
  if (ieos == 2) print*,'Using ieos = ',ieos,'gamma = ',gamma,' gmw = ',gmw
  
- Ebind_g = 0.
- Ebind_b = 0.
+ bind_grav = 0.
+ bind_th = 0.
+ bind_int = 0.
  do i=2,size(m)
     call calc_temp_and_ene(rho(i),pres(i),ene(i),temp(i),ierr)
 
@@ -40,14 +41,26 @@ program calc_binding_energy
     potencore = potencore / hsoft ! Note: gcore is not multiplied by G or mcore yet, and is already negative.
     phi = gg * ( -m(i)/r(i) + mcore*potencore )
     
-!    if (r(i) > rcore) then
-       Ebind_b = Ebind_b + (phi + ene(i)) * ( m(i) - m(i-1) )
-       Ebind_g = Ebind_g + phi * ( m(i) - m(i-1) )
-!    endif
+
+    ! Get (specific) thermal energy
+    select case (ieos)
+    case (2,12) ! Ideal gas or ideal gas plus radiation
+       ethi = ene(i) ! Thermal energy is same as internal energy
+    case (10) ! We want just the gas + radiation internal energy
+       ! Get mu from pres and temp
+       mui = rho(i) * kb_on_mh * temp(i) / (pres(i) - radconst * temp(i)**4 / 3.)
+       ethi = 1.5 * kb_on_mh * temp(i) / mui + radconst * temp(i)**4 / rho(i) ! 3/2*kT/(mu*mh) + aT^4/rho
+    end select
+
+    if (r(i) > rcore) then
+       bind_int = bind_int + (phi + ene(i)) * ( m(i) - m(i-1) )
+       bind_th = bind_th + (phi + ethi) * ( m(i) - m(i-1) )
+       bind_grav = bind_grav + phi * ( m(i) - m(i-1) )
+    endif
  enddo
 
- print*,'Ebind_b = ', Ebind_b
- print*,'Ebind_g = ', Ebind_g
- 
+ print*,'bind_grav = ', bind_grav
+ print*,'bind_th   = ', bind_th 
+ print*,'bind_int  = ', bind_int
 
 end program calc_binding_energy
