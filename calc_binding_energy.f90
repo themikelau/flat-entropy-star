@@ -8,13 +8,16 @@ program calc_binding_energy
  real :: Mstar,hsoft,rcore,mcore,dum,q,potencore
  real :: bind_int,bind_grav,bind_th,Egas,Erad,Erec,phi,ethi,egasi,eradi,ereci,mui,dmi
  integer :: ierr,i
- character(len=120) :: inputpath
+ logical :: iwritefile
+ character(len=120) :: inputpath,outpath
 
  !-Settings--------
  inputpath = 'fixedSprofile.dat'
+ iwritefile = .true.
+ outpath = 'binding_energy_grav.dat'
  rcore = 18.5 * solarr
  mcore = 3.8405 * solarm
- ieos = 2
+ ieos = 12
  gmw = 0.61821
  gamma = 1.6666666667
  if (ieos == 10) then
@@ -67,7 +70,7 @@ program calc_binding_energy
        ereci = ene(i) - ethi ! Remaining component is due to ionisation
     end select
 
-    if (r(i) > rcore) then
+   ! if (r(i) > rcore) then
        dmi = m(i) - m(i-1)
        bind_grav = bind_grav + dmi * phi
        bind_th   = bind_th   + dmi * (phi + ethi)
@@ -75,8 +78,21 @@ program calc_binding_energy
        Egas = Egas + dmi * egasi
        Erad = Erad + dmi * eradi
        Erec = Erec + dmi * ereci
+   ! endif
+
+    if (iwritefile) then
+       if (i==2) then
+          open(unit=42, file=outpath, status='replace')
+          write(42,"(a,2x,a,2x,a)") '       r / cm','        m / g','  Ebind / erg'
+          write(42,"(es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_int
+       else
+          open(unit=42, file=outpath, position='append')
+          write(42,"(es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_int
+       endif
     endif
  enddo
+ close(unit=42)
+ 
 
  print*,'bind_grav = ', bind_grav
  print*,'bind_th   = ', bind_th 
