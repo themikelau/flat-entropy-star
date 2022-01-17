@@ -6,13 +6,12 @@ contains
 subroutine calc_rho_and_pres(m,r,rho,pres)
  use physcon, only:solarm,solarr,kb_on_mh
  use eos, only:init_eos,entropy,gmw,ieos
- use rho_profile, only:write_softened_profile
- real, allocatable, dimension(:), intent(out) :: m,r,rho,pres
+ use rho_profile, only:write_profile
+ real, allocatable, dimension(:), intent(inout) :: m,r,rho,pres
  real, allocatable, dimension(:) :: dm,dm_c
  real :: Mstar,Rstar,R_old,mcore,rcore,Sc,surfpres,surfpres_old,rhofac,Sfac,rhofac0,tol
  integer :: i,N,ientropy,counter1,counter2,ierr
  logical :: irefined
- character(len=120) :: outputpath
  ! INSTRUCTIONS
  ! * The stellar centre has index 0 while the surface has index N
  ! * r(i), m(i) are cell face values
@@ -24,7 +23,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  ! USER SETTINGS
  !-----------------------------------------------------------------------------------------
  !
- ! Choose stellar total mass (including core particle)
+ ! Choose total stellar mass (including core particle)
  Mstar = 12.0 * solarm
  !
  ! Choose number of zones
@@ -129,7 +128,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
           call set_central_bc(Sc,m,r,rho,pres,ientropy) ! Set central boundary conditions for new central density
           counter1 = counter1 + 1
          !  outputpath = 'testprof.dat'
-         !  call write_softened_profile(outputpath,m,pres,m,r,rho,m)
+         !  call write_profile(outputpath,m,pres,m,r,rho,m)
        enddo
     !-----------------------------------------------------------------------------------------
     if (abs(Rstar-r(N)) < tol*Rstar) exit
@@ -158,14 +157,13 @@ end subroutine calc_rho_and_pres
 
 subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
  use physcon, only:gg,pi,solarm,solarr
- use eos, only:get_rho_from_p_s
- use rho_profile, only:write_softened_profile
+ use eos, only:get_rho_from_p_s,gmw
+ use rho_profile, only:write_profile
  real, intent(in)                               :: Sc,mcore,rcore
  real, allocatable, dimension(:), intent(in)    :: m,dm,dm_c
  real, allocatable, dimension(:), intent(inout) :: r,rho,pres
  integer, intent(in)                            :: ientropy
  integer                                        :: i,N
- character(len=120) :: outputpath
 
  N = size(m)-1
  do i = 1,N-1
@@ -174,7 +172,7 @@ subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
        pres(N) = -1. ! Force shooter to increase central density again and refine adjustment to central pressure
        return
     endif
-    call get_rho_from_p_s(pres(i+1),Sc,rho(i+1),rho(i),ientropy)
+    call get_rho_from_p_s(pres(i+1),Sc,rho(i+1),gmw,rho(i),ientropy)
     if (rho(i+1) < 0.) then
        print*,'ERROR: Reached rho < 0 at i = ',i, 'm = ',m(i)/solarm
        write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4)') i,pres(i+1),rho(i),Sc
@@ -197,7 +195,7 @@ end subroutine one_shot
 !+
 !-----------------------------------------------------------------------
 subroutine set_central_bc(Sc,m,r,rho,pres,ientropy)
- use eos, only:get_pres_from_rho_s,get_rho_from_p_s
+ use eos, only:get_rho_from_p_s,gmw
  use physcon, only:gg,pi
  real, intent(in) :: Sc
  real, allocatable, dimension(:), intent(in) :: m
@@ -206,10 +204,10 @@ subroutine set_central_bc(Sc,m,r,rho,pres,ientropy)
  real :: presguess
 
  presguess = pres(0)
- call get_pres_from_rho_s(rho(0),Sc,pres(0),presguess,ientropy) ! Get pres(0)
+ call get_pres_from_rho_s(rho(0),Sc,pres(0),gmw,presguess,ientropy) ! Get pres(0)
  r(1) = ( 3.*m(1) / (4.*pi*rho(0)) )**(1./3.) ! This is the condition of m(0) = m(1/2), i.e. drho/dm = 0 at m(0)
  pres(1) = pres(0) - 3.*gg/(8.*pi) * (4.*pi/3 * rho(0))**(4./3.) * m(1)**(2./3.) ! Ref: Kippenhahn & Weigert
- call get_rho_from_p_s(pres(1),Sc,rho(1),rho(0),ientropy) ! Get rho(1) from pres(1)
+ call get_rho_from_p_s(pres(1),Sc,rho(1),gmw,rho(0),ientropy) ! Get rho(1) from pres(1)
 
 end subroutine set_central_bc
 
@@ -231,6 +229,39 @@ function gcore(r,rcore)
  gcore = gcore / hsoft**2 ! Note: gcore is not multiplied by G or mcore yet.
 
 end function gcore
+
+
+!-----------------------------------------------------------------------
+!+
+!  Calculate pressure given density and entropy using Newton-Raphson
+!  method
+!+
+!-----------------------------------------------------------------------
+subroutine get_pres_from_rho_s(rho,S,pres,mu,presguess,ientropy)
+ use physcon, only:kb_on_mh
+ use eos, only:entropy
+ real, intent(in)    :: rho,S,mu,presguess
+ real, intent(inout) :: pres
+ real                :: spres,spres_plus_dspres,S_plus_dS,dSdspres
+ real(kind=8)        :: corr
+ real, parameter     :: eoserr=1d-9,dfac=1d-12
+ integer, intent(in) :: ientropy
+ 
+ ! We apply the Newton-Raphson method directly to pres^1/2 ("spres") instead
+ ! of pres since S(pres) cannot take a negative argument.
+ spres = sqrt(presguess) ! Initial guess
+ corr = huge(corr);
+ do while (abs(corr) > eoserr*abs(spres))
+    ! First calculate dS/dspres
+    spres_plus_dspres = spres * (1. + dfac)
+    S_plus_dS = entropy(rho,spres_plus_dspres**2,mu,ientropy)
+    dSdspres = (S_plus_dS - entropy(rho,spres**2,mu,ientropy)) / (spres_plus_dspres - spres)
+    corr = ( entropy(rho,spres**2,mu,ientropy) - S ) / dSdspres
+    spres = spres - corr
+ enddo
+ pres = spres**2
+
+end subroutine get_pres_from_rho_s
 
 
 end module fixedSprofile
