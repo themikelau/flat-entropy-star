@@ -83,7 +83,7 @@ program calc_binding_energy
     if (iwritefile) then
        if (i==2) then
           open(unit=42, file=outpath, status='replace')
-          write(42,"(a,2x,a,2x,a)") '       r / cm','        m / g','  Ebind / erg'
+          write(42,"(a,2x,a,2x,a)") '       r / cm','        m / g','Ebind<r / erg'
           write(42,"(es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_int
        else
           open(unit=42, file=outpath, position='append')

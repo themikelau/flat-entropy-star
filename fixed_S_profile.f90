@@ -5,7 +5,7 @@ contains
 
 subroutine calc_rho_and_pres(m,r,rho,pres)
  use physcon, only:solarm,solarr,kb_on_mh
- use eos,only:init_eos,entropy,gmw,ieos
+ use eos, only:init_eos,entropy,gmw,ieos
  use rho_profile, only:write_softened_profile
  real, allocatable, dimension(:), intent(out) :: m,r,rho,pres
  real, allocatable, dimension(:) :: dm,dm_c
@@ -37,7 +37,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  rcore = 18.9 * solarr
  !
  ! Choose desired stellar radius to shoot for
- Rstar = 4.3061478138863500d13 !500. * solarr !3.416975d13
+ Rstar = 4.3061478138863500d13 !500. * solarr
  !
  ! Desired surface pressure
  surfpres = 300. !2.374667d5
@@ -50,7 +50,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  ! Expression for entropy
  ieos = 12
  ientropy = 2 ! Include both gas and radiation entropy
- gmw = 0.61821
+ gmw = 0.61821 ! Assumed mean molecular weight
  !-----------------------------------------------------------------------------------------
 
  print*,'CONSTRUCTING FIXED ENTROPY STAR'
@@ -169,7 +169,7 @@ subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
 
  N = size(m)-1
  do i = 1,N-1
-    pres(i+1) = pres(i) - dm_c(i) * gg/(4*pi*r(i)**2) * ( m(i)/r(i)**2 + mcore * gcore(r(i),rcore) )
+    pres(i+1) = pres(i) - dm_c(i) * gg/(4.*pi*r(i)**2) * ( m(i)/r(i)**2 + mcore * gcore(r(i),rcore) )
     if (pres(i+1) < 0.) then
        pres(N) = -1. ! Force shooter to increase central density again and refine adjustment to central pressure
        return
@@ -185,7 +185,7 @@ subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
        write(*,'(i5,2x,e12.4,2x,e12.4,2x,e12.4)') i,pres(i+1),rho(i),Sc
        stop
     endif
-    r(i+1) = (3*dm(i+1)/(4*pi*rho(i+1)) + r(i)**3)**(1./3.)
+    r(i+1) = (3.*dm(i+1)/(4.*pi*rho(i+1)) + r(i)**3)**(1./3.)
  enddo
 
 end subroutine one_shot
