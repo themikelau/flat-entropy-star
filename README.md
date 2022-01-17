@@ -22,7 +22,7 @@ Before compile the code, you should set up your calculation by editing `fixed_S_
  mcore = 3.84048 * solarm
  !
  ! Choose core radius
- rcore = 18.9 * solarr
+ rcore = 18.5 * solarr
  !
  ! Choose desired stellar radius to shoot for
  Rstar = 4.3061478138863500d13 !500. * solarr
@@ -35,13 +35,14 @@ Before compile the code, you should set up your calculation by editing `fixed_S_
  Sfac = 0.008     ! Additive factor for adjusting entropy
  tol = 1d-3       ! Relative tolerance for matching surface pressure and radius to desired values
  !
- ! Expression for entropy
+ ! EoS options
  ieos = 12
- ientropy = 2 ! Include both gas and radiation entropy
+ ientropy = 2  ! Include both gas and radiation entropy
+ gamma = 5./3. ! Polytropic index
  gmw = 0.61821 ! Assumed mean molecular weight
  !-----------------------------------------------------------------------------------------
 ```
-In a nutshell, specify the stellar mass and radius and the core mass and radius. Choose an appropriate value for the star's surface pressure, which should not be "too high" to avoid expansion. You should also specify EoS-related settings: `ieos` (equation of state type, following what Phantom uses), `ientropy` (see the `entropy` function in Phantom's `eos` module), and `gmw` (mean molecular weight, assumed to be constant throughout star).
+In a nutshell, specify the stellar mass and radius and the core mass and radius. Choose an appropriate value for the star's surface pressure, which should not be "too high" to avoid expansion. You should also specify EoS-related settings: `ieos` (equation of state type, following what Phantom uses), `ientropy` (see the `entropy` function in Phantom's `eos` module), `gamma` (polytropic index), and `gmw` (mean molecular weight, assumed to be constant throughout star).
 
 If may also adjust initial guesses for the central density and fixed value of specific entropy. Play with these values if the code is struggling to converge onto a solution:
 ```
