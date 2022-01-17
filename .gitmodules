@@ -1,3 +1,5 @@
 [submodule "phantom"]
 	path = phantom
 	url = git@github.com:danieljprice/phantom.git
+[submodule "./phantom"]
+	branch = write-profile
