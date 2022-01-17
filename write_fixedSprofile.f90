@@ -25,7 +25,7 @@ program write_fixed_S_profile
 
  outputpath = 'fixedSprofile.dat'
  call write_profile(outputpath,m,pres,temp,r,rho,ene)
- print*,'Profile written to',outputpath
+ print*,'Profile written to ',outputpath
 
  print*,'May this envelope stay put.'
 

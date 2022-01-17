@@ -5,7 +5,7 @@ contains
 
 subroutine calc_rho_and_pres(m,r,rho,pres)
  use physcon, only:solarm,solarr,kb_on_mh
- use eos, only:init_eos,entropy,gmw,ieos
+ use eos, only:init_eos,entropy,gmw,ieos,gamma
  use rho_profile, only:write_profile
  real, allocatable, dimension(:), intent(inout) :: m,r,rho,pres
  real, allocatable, dimension(:) :: dm,dm_c
@@ -33,7 +33,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  mcore = 3.84048 * solarm
  !
  ! Choose core radius
- rcore = 18.9 * solarr
+ rcore = 18.5 * solarr
  !
  ! Choose desired stellar radius to shoot for
  Rstar = 4.3061478138863500d13 !500. * solarr
@@ -46,9 +46,10 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  Sfac = 0.008     ! Additive factor for adjusting entropy
  tol = 1d-3       ! Relative tolerance for matching surface pressure and radius to desired values
  !
- ! Expression for entropy
+ ! EoS options
  ieos = 12
- ientropy = 2 ! Include both gas and radiation entropy
+ ientropy = 2  ! Include both gas and radiation entropy
+ gamma = 5./3. ! Polytropic index
  gmw = 0.61821 ! Assumed mean molecular weight
  !-----------------------------------------------------------------------------------------
 
@@ -62,7 +63,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
 
  ! Allocate and set up arrays
  allocate( m(0:N), rho(0:N), pres(0:N), r(0:N) )
- allocate( dm(1:N), dm_c(2:N))
+ allocate( dm(1:N), dm_c(1:N))
 
  do i = 1,N
     dm(i) = (Mstar - mcore) / N
