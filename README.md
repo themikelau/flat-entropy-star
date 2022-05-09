@@ -5,6 +5,10 @@ git clone --recurse-submodules git@github.com:themikelau/flat-entropy-star.git
 ```
 You should see that the `flat-entropy-star` repository contains a copy of `phantom`.
 
+On the other hand, if you already have Phantom on your machine, you may want to link it to the current directory instead of using a submodule. In that case, clone this repository without the `--recurse-submodules` flag and produce a soft link to Phantom. If `PHANTOM_DIR` is the path to your Phantom directory, execute the following from the `flat-entropy-star` directory:
+```
+ln -s PHANTOM_DIR phantom
+```
 ## Setting up your calculation
 Before compile the code, you should set up your calculation by editing `fixed_S_profile.f90`. Calculation settings are specified by editing part of the `calc_rho_and_pres` subroutine:
 ```
