@@ -54,11 +54,11 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  !-----------------------------------------------------------------------------------------
 
  print*,'CONSTRUCTING FIXED ENTROPY STAR'
- write(*,'(a30,e13.5,a10)'),'M =',Mstar / solarm,'Msun'
- write(*,'(a30,e13.5,a10)'),'mcore =',mcore / solarm,'Msun'
- write(*,'(a30,e13.5,a10)'),'rcore =',rcore / solarr,'Rsun'
- write(*,'(a30,e13.5,a10)'),'Desired surface pressure =',surfpres,'dyn cm^-2'
- write(*,'(a30,e13.5,a10)'),'Desired radius =',Rstar / solarr,'Rsun'
+ write(*,'(a30,e13.5,a10)')'M =',Mstar / solarm,'Msun'
+ write(*,'(a30,e13.5,a10)')'mcore =',mcore / solarm,'Msun'
+ write(*,'(a30,e13.5,a10)')'rcore =',rcore / solarr,'Rsun'
+ write(*,'(a30,e13.5,a10)')'Desired surface pressure =',surfpres,'dyn cm^-2'
+ write(*,'(a30,e13.5,a10)')'Desired radius =',Rstar / solarr,'Rsun'
  call init_eos(ieos,ierr)
 
  ! Allocate and set up arrays
@@ -95,7 +95,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  r(N) = 1.1 * Rstar
  rhofac = rhofac0
  counter2 = 0
-
+ irefined = .false.
  do
     R_old = r(N) ! Save value of stellar radius in previous shot
     rhofac = rhofac0 ! Reset fractional change in rho(0) to its starting value
@@ -103,10 +103,10 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
     counter1 = 0
 
     if (irefined) then
-       write(*,'(a4,2x,a4,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12)'),'c1','c2','rhofac','S','rho_0','Psurf','R','rho refined' ! DEBUGGING
+       write(*,'(a4,2x,a4,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12)') 'c1','c2','rhofac','S','rho_0','Psurf','R','rho refined' ! DEBUGGING
        irefined = .false.
     else
-       write(*,'(a4,2x,a4,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12)'),'c1','c2','rhofac','S','rho_0','Psurf','R' ! DEBUGGING
+       write(*,'(a4,2x,a4,2x,a12,2x,a12,2x,a12,2x,a12,2x,a12)') 'c1','c2','rhofac','S','rho_0','Psurf','R' ! DEBUGGING
     endif
     !---------------------------LOOP-OVER-CENTRAL-DENSITY-------------------------------------
     ! Vary central density to get the desired surface pressure
@@ -114,7 +114,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
           surfpres_old = pres(N) ! Save value of surface pressure in previous shot
           call one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
           if ( abs(pres(N)-surfpres) < tol * pres(N) ) exit
-          write(*,'(i4,2x,i4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)'),counter1,counter2,rhofac,Sc,rho(0),pres(N),r(N)/solarr ! DEBUGGING
+          write(*,'(i4,2x,i4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4,2x,e12.4)') counter1,counter2,rhofac,Sc,rho(0),pres(N),r(N)/solarr ! DEBUGGING
           if (pres(N) > surfpres) then
              ! Decrease value of central density to decrease surface pressure
              rho(0) = rho(0) * (1 - rhofac)
@@ -150,8 +150,8 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  !-----------------------------------------------------------------------------------------
 
  print*,'CONVERGED ONTO DESIRED PROFILE'
- write(*,'(a30,e13.5,a10)'),'Obtained surface pressure =',pres(N),'dyn cm^-2'
- write(*,'(a30,e13.5,a10)'),'Obtained radius =',r(N) / solarr,'Rsun'
+ write(*,'(a30,e13.5,a10)') 'Obtained surface pressure =',pres(N),'dyn cm^-2'
+ write(*,'(a30,e13.5,a10)') 'Obtained radius =',r(N) / solarr,'Rsun'
 
 end subroutine calc_rho_and_pres
 
