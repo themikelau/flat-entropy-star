@@ -15,13 +15,13 @@ program calc_binding_energy
  !-Settings--------
  inputpath = 'fixedS_gasrad.dat'
  iwritefile = .true.
- outpath = 'binding_energy_grav.dat'
+ outpath = 'Ebind.dat'
  rcore = 18.5 * solarr
  mcore = 3.8405 * solarm
  ieos = 20
  gmw = 0.61821  ! Only used for ieos = 2,12
  gamma = 1.6666666667
- irecomb = 0
+ irecomb = 3
  if ( (ieos == 10) .or. (ieos == 20) ) then
     X_in = 0.69843
     Z_in = 0.01426
@@ -77,23 +77,24 @@ program calc_binding_energy
        ereci = ene(i) - ethi ! Remaining component is due to ionisation
     end select
 
-    dmi = m(i) - m(i-1)
-    bind_grav = bind_grav + dmi * phi
-    bind_th   = bind_th   + dmi * (phi + ethi)
-    bind_int  = bind_int  + dmi * (phi + ene(i))
-    Egas = Egas + dmi * egasi
-    Erad = Erad + dmi * eradi
-    Erec = Erec + dmi * ereci
+!    if (r(i) > rcore) then
+       dmi = m(i) - m(i-1)
+       bind_grav = bind_grav + dmi * phi
+       bind_th   = bind_th   + dmi * (phi + ethi)
+       bind_int  = bind_int  + dmi * (phi + ene(i))
+       Egas = Egas + dmi * egasi
+       Erad = Erad + dmi * eradi
+       Erec = Erec + dmi * ereci
+!    endif
 
     if (iwritefile) then
        if (i==2) then
           open(newunit=iunit, file=outpath, status='replace')
-          write(iunit,"(a,2x,a,2x,a)") '       r / cm','        m / g','  Ebind / erg'
-          write(iunit,"(es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_int
+          write(iunit,"(a,2x,a,2x,a,2x,a,2x,a)") '       r / cm','        m / g','Ebind_g / erg','Ebind_t / erg','Ebind_i / erg'
        else
           open(newunit=iunit, file=outpath, position='append')
-          write(iunit,"(es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_int
        endif
+       write(iunit,"(es13.6,2x,es13.6,2x,es13.6,2x,es13.6,2x,es13.6)") r(i),m(i)+mcore,bind_grav,bind_th,bind_int
     endif
     close(unit=iunit)
  enddo
