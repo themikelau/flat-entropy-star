@@ -1,5 +1,5 @@
 program calc_binding_energy
- use rho_profile, only:read_mesa
+ use readwrite_mesa,only:write_mesa
  use eos,         only:calc_temp_and_ene,ieos,gmw,X_in,Z_in,init_eos,gamma
  use eos_gasradrec, only:irecomb
  use kernel,      only:kernel_softening

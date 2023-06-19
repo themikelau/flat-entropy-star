@@ -6,7 +6,6 @@ contains
 subroutine calc_rho_and_pres(m,r,rho,pres)
  use physcon, only:solarm,solarr,kb_on_mh
  use eos, only:init_eos,entropy,gmw,ieos,gamma
- use rho_profile, only:write_profile
  real, allocatable, dimension(:), intent(inout) :: m,r,rho,pres
  real, allocatable, dimension(:) :: dm,dm_c
  real :: Mstar,Rstar,R_old,mcore,rcore,Sc,surfpres,surfpres_old,rhofac,Sfac,rhofac0,tol
@@ -129,7 +128,7 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
           call set_central_bc(Sc,m,r,rho,pres,ientropy) ! Set central boundary conditions for new central density
           counter1 = counter1 + 1
          !  outputpath = 'testprof.dat'
-         !  call write_profile(outputpath,m,pres,m,r,rho,m)
+         !  call write_mesa(outputpath,m,pres,m,r,rho,m)
        enddo
     !-----------------------------------------------------------------------------------------
     if (abs(Rstar-r(N)) < tol*Rstar) exit
@@ -159,7 +158,6 @@ end subroutine calc_rho_and_pres
 subroutine one_shot(Sc,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
  use physcon, only:gg,pi,solarm,solarr
  use eos, only:get_rho_from_p_s,gmw
- use rho_profile, only:write_profile
  real, intent(in)                               :: Sc,mcore,rcore
  real, allocatable, dimension(:), intent(in)    :: m,dm,dm_c
  real, allocatable, dimension(:), intent(inout) :: r,rho,pres

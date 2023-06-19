@@ -1,6 +1,6 @@
 program write_fixed_S_profile
  use fixedSprofile, only:calc_rho_and_pres
- use rho_profile,   only:write_profile
+ use readwrite_mesa,only:write_mesa
  use eos,           only:calc_temp_and_ene,ieos
  use table_utils,   only:flip_array
  implicit none
@@ -24,7 +24,7 @@ program write_fixed_S_profile
  call flip_array(ene)
 
  outputpath = 'fixedSprofile.dat'
- call write_profile(outputpath,m,pres,temp,r,rho,ene)
+ call write_mesa(outputpath,m,pres,temp,r,rho,ene)
  print*,'Profile written to ',outputpath
 
  print*,'May this envelope stay put.'

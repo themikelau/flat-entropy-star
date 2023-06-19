@@ -1,5 +1,5 @@
 program write_uTprofile
- use rho_profile, only:write_profile,read_mesa
+ use rho_profile, only:read_mesa
  use eos,         only:calc_temp_and_ene,ieos,gmw,X_in,Z_in,init_eos,gamma,equationofstate
  use units,       only:set_units,unit_density,unit_velocity,unit_ergg
  use physcon,     only:solarm,solarr
@@ -42,9 +42,9 @@ program write_uTprofile
        Xfrac(i) = X_in
        Yfrac(i) = 1.-X_in-Z_in
     enddo
-    call write_profile(outputpath,m,pres,temp,r,rho,ene,Xfrac,Yfrac,csound)
+    call write_mesa(outputpath,m,pres,temp,r,rho,ene,Xfrac,Yfrac,csound)
  else
-    call write_profile(outputpath,m,pres,temp,r,rho,ene)
+    call write_mesa(outputpath,m,pres,temp,r,rho,ene)
  endif
  print*,'Profile written to',outputpath
 
