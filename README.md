@@ -2,7 +2,7 @@
 This code requires several modules from the publicly-available SPH code [Phantom](https://github.com/danieljprice/phantom). This means there are two ways to install this code, depending on whether or not you already have Phantom on your machine.
 
 ### If you don't have Phantom
-You don't have to install Phantom separately---Phantom has been incorporated as a git submodule to this repository. This means that this repository stores a copy of the Phantom repository, but the commit history of Phantom is independent from this code's. To clone this repository including the Phantom submodule, you must include the `--recurse-submodules` flag:
+You don't have to install Phantom separately. Phantom has been incorporated as a git submodule to this repository. This means that this repository stores a copy of the Phantom repository, but the commit history of Phantom is independent from this code's. To clone this repository including the Phantom submodule, you must include the `--recurse-submodules` flag:
 ```
 git clone --recurse-submodules git@github.com:themikelau/flat-entropy-star.git
 ```
@@ -13,6 +13,8 @@ If you already have Phantom on your machine, clone this repository with the usua
 ```
 ln -s PHANTOM_DIR phantom
 ```
+A word of caution: There is no guarantee that whatever version of Phantom you have is (backward) compatible with this code. If you run into compilation or runtime errors, you should try checking out the Phantom version with commit hash `5d3911c`. If there are further issues, feel free to contact me. 
+
 ## Setting up your calculation
 Before compile the code, you should set up your calculation by editing `fixed_S_profile.f90`. Calculation settings are specified by editing part of the `calc_rho_and_pres` subroutine:
 ```
@@ -33,26 +35,26 @@ Before compile the code, you should set up your calculation by editing `fixed_S_
  rcore = 18.5 * solarr
  !
  ! Choose desired stellar radius to shoot for
- Rstar = 4.3061478138863500d13 !500. * solarr
+ Rstar = 4.3061478138863500d13
  !
  ! Desired surface pressure
- surfpres = 300. !2.374667d5
+ surfpres = 300.
  !
  ! Adjustment factor for shooting
  rhofac0 = 0.01   ! Multiplicative factor for adjusting central density
- Sfac = 0.008     ! Additive factor for adjusting entropy
- tol = 1d-3       ! Relative tolerance for matching surface pressure and radius to desired values
+ Sfac = 0.008      ! Additive factor for adjusting entropy
+ tol = 1d-3           ! Relative tolerance for matching surface pressure and radius to desired values
  !
  ! EoS options
  ieos = 12
- ientropy = 2  ! Include both gas and radiation entropy
- gamma = 5./3. ! Polytropic index
- gmw = 0.61821 ! Assumed mean molecular weight
+ ientropy = 2         ! Include both gas and radiation entropy
+ gamma = 5./3.     ! Polytropic index
+ gmw = 0.61821   ! Assumed mean molecular weight
  !-----------------------------------------------------------------------------------------
 ```
-In a nutshell, specify the stellar mass and radius and the core mass and radius. Choose an appropriate value for the star's surface pressure, which should not be "too high" to avoid expansion. You should also specify EoS-related settings: `ieos` (equation of state type, following what Phantom uses), `ientropy` (see the `entropy` function in Phantom's `eos` module), `gamma` (polytropic index), and `gmw` (mean molecular weight, assumed to be constant throughout star).
+In a nutshell, specify the stellar mass, stellar radius, core mass, and core radius. An outer boundary condition is specified as the surface pressure, which should not be "too high" to avoid expansion. You should also specify EoS-related settings: `ieos` (equation of state type, following what Phantom uses), `ientropy` (see the `entropy` function in Phantom's `eos` module), `gamma` (polytropic index), and `gmw` (mean molecular weight, assumed to be constant throughout star).
 
-If may also adjust initial guesses for the central density and fixed value of specific entropy. Play with these values if the code is struggling to converge onto a solution:
+You may also adjust initial guesses for the central density and fixed value of specific entropy. Play with these values if the code is struggling to converge onto a solution:
 ```
  !-----------------------------------------------------------------------------------------
  ! INITIAL GUESSES
