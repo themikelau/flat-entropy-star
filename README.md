@@ -1,11 +1,15 @@
 ## Getting the code
-This code requires several modules from Phantom, which are incorporated as a git submodule to this repository. This means that this repository stores a copy of the Phantom repository, but the commit history of Phantom is independent from this code's. To clone this repository including the Phantom submodule, you must include the `--recurse-submodules` flag:
+This code requires several modules from the publicly-available SPH code [Phantom](https://github.com/danieljprice/phantom). This means there are two ways to install this code, depending on whether or not you already have Phantom on your machine.
+
+### If you don't have Phantom
+You don't have to install Phantom separately---Phantom has been incorporated as a git submodule to this repository. This means that this repository stores a copy of the Phantom repository, but the commit history of Phantom is independent from this code's. To clone this repository including the Phantom submodule, you must include the `--recurse-submodules` flag:
 ```
 git clone --recurse-submodules git@github.com:themikelau/flat-entropy-star.git
 ```
 You should see that the `flat-entropy-star` repository contains a copy of `phantom`.
 
-On the other hand, if you already have Phantom on your machine, you may want to link it to the current directory instead of using a submodule. In that case, clone this repository without the `--recurse-submodules` flag and produce a soft link to Phantom. If `PHANTOM_DIR` is the path to your Phantom directory, execute the following from the `flat-entropy-star` directory:
+### If you already have Phantom
+If you already have Phantom on your machine, clone this repository with the usual command, without the `--recurse-submodules` flag shown above. But then, you need to create a soft link to Phantom. If `PHANTOM_DIR` is the path to your Phantom directory, execute the following from the `flat-entropy-star` directory:
 ```
 ln -s PHANTOM_DIR phantom
 ```
