@@ -13,7 +13,7 @@ If you already have Phantom on your machine, clone this repository with the usua
 ```
 ln -s PHANTOM_DIR phantom
 ```
-A word of caution: There is no guarantee that whatever version of Phantom you have is (backward) compatible with this code. If you run into compilation or runtime errors, you should try checking out the Phantom version with commit hash `5d3911c`. If there are further issues, feel free to contact me. 
+Whatever version of Phantom you have is probably newer and not backward compatible with this code. Thus, to compile `flat-entropy-star`, you should check out a Phantom version that is known to be compatible, e.g. one with the commit hash `5d3911c`. If there are further issues, feel free to contact me. 
 
 ## Setting up your calculation
 Before compile the code, you should set up your calculation by editing `fixed_S_profile.f90`. Calculation settings are specified by editing part of the `calc_rho_and_pres` subroutine:
@@ -54,7 +54,7 @@ Before compile the code, you should set up your calculation by editing `fixed_S_
 ```
 In a nutshell, specify the stellar mass, stellar radius, core mass, and core radius. An outer boundary condition is specified as the surface pressure, which should not be "too high" to avoid expansion. You should also specify EoS-related settings: `ieos` (equation of state type, following what Phantom uses), `ientropy` (see the `entropy` function in Phantom's `eos` module), `gamma` (polytropic index), and `gmw` (mean molecular weight, assumed to be constant throughout star).
 
-You may also adjust initial guesses for the central density and fixed value of specific entropy. Play with these values if the code is struggling to converge onto a solution:
+You should also set sensible initial guesses for the central density and fixed value of specific entropy. If you are trying to set up a flat-entropy giant-star envelope, you could set `Sc` to be the specific entropy in a reference stellar model. Play with these values if the code is struggling to converge onto a solution:
 ```
  !-----------------------------------------------------------------------------------------
  ! INITIAL GUESSES
