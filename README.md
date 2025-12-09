@@ -13,7 +13,7 @@ If you already have Phantom on your machine, clone this repository with the usua
 ```
 ln -s PHANTOM_DIR phantom
 ```
-Whatever version of Phantom you have is probably newer and not backward compatible with this code. Thus, to compile `flat-entropy-star`, you should check out a Phantom version that is known to be compatible, e.g. one with the commit hash `5d3911c`. If there are further issues, feel free to contact me. 
+Whatever version of Phantom you have is probably newer and not backward compatible with this code. Thus, to compile `flat-entropy-star`, you should check out a Phantom version that is known to be compatible, e.g. one with the commit hash `5e80c1b`. If there are further issues, feel free to contact me. 
 
 ## Setting up your calculation
 Before compile the code, you should set up your calculation by editing `fixed_S_profile.f90`. Calculation settings are specified by editing part of the `calc_rho_and_pres` subroutine:
