@@ -8,11 +8,13 @@ contains
 subroutine calc_rho_and_pres(m,r,rho,pres)
  use physcon, only:solarm,solarr,kb_on_mh
  use eos, only:init_eos,entropy,gmw,ieos,gamma,X_in,Z_in
+!  use readwrite_mesa, only:write_mesa
  real, allocatable, dimension(:), intent(inout) :: m,r,rho,pres
  real, allocatable, dimension(:) :: dm,dm_c
  real :: Mstar,Rstar,R_old,mcore,rcore,Sc,surfpres,surfpres_old,rhofac,Sfac,rhofac0,tol,delta,gamma1_0
  integer :: i,N,ientropy,counter1,counter2,ierr
  logical :: irefined
+!  character(len=120) :: outputpath
  ! INSTRUCTIONS
  ! * The stellar centre has index 0 while the surface has index N
  ! * r(i), m(i) are cell face values
@@ -46,8 +48,8 @@ subroutine calc_rho_and_pres(m,r,rho,pres)
  gamma1_0 = 1.45
  !
  ! Adjustment factor for shooting
- rhofac0 = 0.01   ! Multiplicative factor for adjusting central density
- Sfac = 0.05      ! Additive factor for adjusting entropy
+ rhofac0 = 0.05   ! Multiplicative factor for adjusting central density
+ Sfac = 0.008      ! Additive factor for adjusting entropy
  tol = 1d-3       ! Relative tolerance for matching surface pressure and radius to desired values
  !
  ! EoS options
@@ -199,7 +201,8 @@ subroutine one_shot(Sc,delta,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
  N = size(m)-1
  do i = 1,N-1
     pres(i+1) = pres(i) - dm_c(i) * gg/(4.*pi*r(i)**2) * ( m(i)/r(i)**2 + mcore * gcore(r(i),rcore) )
-    if ((pres(i+1)<0.) .or. (rho(i+1)<0.)) then
+      !  print*,'DEBUG',i,pres(i),pres(i+1),rho(i),rho(i+1)
+    if (pres(i+1)<0.) then
        pres(N) = -1. ! Force shooter to increase central density again and refine adjustment to central density
        return
     endif
@@ -208,6 +211,10 @@ subroutine one_shot(Sc,delta,mcore,rcore,m,dm,dm_c,r,rho,pres,ientropy)
        rho(i+1) = rho(i) + (pres(i+1)-pres(i))*((1.+delta)/gamma1_i*rho(i)/pres(i))
     else
        call get_rho_from_p_s(pres(i+1),Sc,rho(i+1),gmw,rho(i),ientropy)
+    endif
+    if ((rho(i+1)<0.) .or. (rho(i+1) > rho(i))) then
+       pres(N) = -1. ! Force shooter to increase central density again and refine adjustment to central density
+       return
     endif
     if (rho(i+1) > rho(i)) then
        print*,'ERROR: Density inversion at i = ',i, 'm = ',m(i)/solarm
